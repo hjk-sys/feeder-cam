@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 
 import numpy as np
 
+from feedercam import db
 from feedercam.crops import square_box
 from feedercam.motion import MotionDetector
 from feedercam.store import save_visit
@@ -95,7 +96,7 @@ def test_crops_are_limited_and_spread_out():
     assert all(g >= 1.0 for g in gaps)
 
 
-# --- saving visits ----------------------------------------------------------
+# --- store + database ---------------------------------------------------------
 
 def make_visit():
     feed.t = T0
@@ -104,12 +105,24 @@ def make_visit():
     return tr.flush()[0]
 
 
-def test_save_visit_writes_crops_and_log(tmp_path):
-    rec = save_visit(make_visit(), tmp_path, "test-pi")
-    assert rec["crops"] and all((tmp_path / c["path"]).exists() for c in rec["crops"])
-    logged = [json.loads(l) for l in (tmp_path / "visits" / "2026-10-15.jsonl").read_text().splitlines()]
-    assert logged == [rec]
-    assert rec["uid"].startswith("test-pi-20261015-080000-")
+def test_save_ingest_classify_correct(tmp_path):
+    incoming = tmp_path / "incoming"
+    rec = save_visit(make_visit(), incoming, "test-pi")
+    assert all((incoming / c["path"]).exists() for c in rec["crops"])
+
+    conn = db.connect(tmp_path / "feeder.db")
+    assert db.ingest(conn, incoming) == 1
+    assert db.ingest(conn, incoming) == 0    # re-running doesn't duplicate
+    assert len(db.crops_for(conn, rec["uid"])) == len(rec["crops"])
+
+    assert [r["uid"] for r in db.visits_to_classify(conn)] == [rec["uid"]]
+    db.set_prediction(conn, rec["uid"], "Carolina Wren", 0.55, [["Carolina Wren", 0.55]], "v1")
+    assert db.visits_to_classify(conn) == []
+    assert len(db.visits_to_classify(conn, model_version="v2")) == 1
+
+    db.set_correction(conn, rec["uid"], "House Wren")
+    row = conn.execute("SELECT final_species FROM labeled_visits").fetchone()
+    assert row["final_species"] == "House Wren"
 
 
 def test_low_confidence_track_is_not_a_visit():
@@ -117,3 +130,11 @@ def test_low_confidence_track_is_not_a_visit():
     tr = VisitTracker(end_after_s=1, min_conf=0.9)  # feed() uses conf 0.8
     feed(tr, 3, [1])
     assert tr.flush() == []
+
+
+def test_save_visit_writes_crops_and_log(tmp_path):
+    rec = save_visit(make_visit(), tmp_path, "test-pi")
+    assert rec["crops"] and all((tmp_path / c["path"]).exists() for c in rec["crops"])
+    logged = [json.loads(l) for l in (tmp_path / "visits" / "2026-10-15.jsonl").read_text().splitlines()]
+    assert logged == [rec]
+    assert rec["uid"].startswith("test-pi-20261015-080000-")

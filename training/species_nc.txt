@@ -1,0 +1,35 @@
+# Classes the species model learns: common NC Piedmont feeder visitors.
+# One iNaturalist common name per line. Edit this to match your own feeder:
+# the eBird bar chart for your county shows what's actually around and when.
+# Hard look-alike pairs worth watching: Downy/Hairy Woodpecker, House/Purple Finch.
+Northern Cardinal
+Carolina Chickadee
+Tufted Titmouse
+Carolina Wren
+House Finch
+Purple Finch
+American Goldfinch
+Pine Siskin
+Mourning Dove
+Blue Jay
+Downy Woodpecker
+Hairy Woodpecker
+Red-bellied Woodpecker
+White-breasted Nuthatch
+Brown-headed Nuthatch
+Dark-eyed Junco
+White-throated Sparrow
+Chipping Sparrow
+Song Sparrow
+House Sparrow
+Eastern Bluebird
+Pine Warbler
+Yellow-rumped Warbler
+Eastern Towhee
+Northern Mockingbird
+Common Grackle
+Red-winged Blackbird
+Brown-headed Cowbird
+European Starling
+# Not a bird, but YOLO sometimes calls one a bird, so the classifier needs to know it.
+Eastern Gray Squirrel
