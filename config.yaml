@@ -27,8 +27,16 @@ visits:
   end_after_s: 4           # a bird unseen this long has left; its visit is saved
   min_frames: 3            # tracks shorter than this are treated as flicker
   min_conf: 0.4            # a visit needs at least one detection this confident
-  crops_per_visit: 3       # best crops kept per visit
+  crops_per_visit: 3       # best crops kept per visit for the classifier
   crop_padding: 0.15
 
 paths:
   incoming: data/incoming  # the capture loop writes visits + crops here
+  db: data/feeder.db       # the laptop's SQLite log
+  training: data/training
+
+classifier:
+  arch: vit_small_patch16_224.augreg_in21k_ft_in1k
+  checkpoint: models/species_vit.pt
+  low_conf: 0.6            # predictions below this go to the review queue
+  batch_size: 32
