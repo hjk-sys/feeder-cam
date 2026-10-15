@@ -1,0 +1,16 @@
+# Template: pi/install.sh fills in __USER__ and __REPO__ and installs this
+# to /etc/systemd/system/feedercam.service.
+[Unit]
+Description=feeder-cam bird detector
+After=network-online.target
+
+[Service]
+User=__USER__
+WorkingDirectory=__REPO__
+ExecStart=__REPO__/.venv/bin/python -m feedercam --config config.pi.yaml run
+Environment=PYTHONUNBUFFERED=1
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

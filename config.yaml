@@ -1,0 +1,34 @@
+# feeder-cam configuration. Relative paths are resolved from the project root.
+
+device_name: feeder-pi
+
+camera:
+  source: picamera2        # picamera2 | usb | path/to/video.mp4
+  usb_index: 0
+  width: 1280
+  height: 720
+  fps: 10
+
+motion:
+  enabled: true
+  downscale_width: 320     # motion check runs on a small grayscale copy
+  threshold: 25            # per-pixel brightness change that counts as motion
+  min_area_frac: 0.003     # fraction of the frame that must change
+  cooldown_s: 5            # keep running the detector this long after motion stops
+
+detector:
+  weights: yolov8n.pt      # on the Pi, an NCNN export is much faster (see README)
+  imgsz: 640
+  conf: 0.1                # low on purpose: ByteTrack uses weak boxes to keep tracks alive
+  every_n_frames: 1        # raise to 2-3 if the Pi can't keep up
+  tracker: bytetrack.yaml
+
+visits:
+  end_after_s: 4           # a bird unseen this long has left; its visit is saved
+  min_frames: 3            # tracks shorter than this are treated as flicker
+  min_conf: 0.4            # a visit needs at least one detection this confident
+  crops_per_visit: 3       # best crops kept per visit
+  crop_padding: 0.15
+
+paths:
+  incoming: data/incoming  # the capture loop writes visits + crops here

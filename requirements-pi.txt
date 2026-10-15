@@ -1,0 +1,5 @@
+# Raspberry Pi: capture + detection only. picamera2 is installed with apt (see pi/install.sh).
+ultralytics>=8.3
+ncnn
+pyyaml>=6.0
+lap>=0.5
