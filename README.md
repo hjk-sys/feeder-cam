@@ -22,7 +22,7 @@ SQLite log with a Streamlit dashboard for counts and for correcting the model.
 | Stage | State |
 |---|---|
 | Capture (Pi camera / USB / video file) + motion gate | written, tested on video; not yet run on the Pi |
-| Detection + tracking (YOLOv8n + ByteTrack) | working on simulated footage |
+| Detection + tracking (YOLOv8n + ByteTrack) | working on simulated footage; thresholds not yet tuned on real feeder video |
 | Visit logging (crops + JSONL on the Pi, SQLite on the laptop) | working, unit tested |
 | Species classifier (ViT-Small, 30 NC classes) | code + data ready; first full training run not finished |
 | Dashboard + review queue | working on simulated data |
@@ -36,6 +36,20 @@ python3.13 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 .venv/bin/python -m pytest
 ```
+
+### Try detection on a video or webcam
+
+```bash
+# Run detection on any video; writes visits to data/incoming and a boxed copy of the video
+.venv/bin/python -m feedercam run --source some_clip.mp4 --annotate boxed.mp4
+
+# Or watch a webcam live (press q to quit)
+.venv/bin/python -m feedercam --set camera.source=usb run --preview
+```
+
+The first run downloads `yolov8n.pt` (6 MB), YOLOv8's smallest pretrained
+model. It already knows "bird" from the COCO dataset, so no training is needed
+for detection.
 
 ### Train the species model
 
@@ -66,12 +80,32 @@ git clone <this repo> feeder-cam && cd feeder-cam
 bash pi/install.sh                     # picamera2, venv, NCNN export, systemd unit
 .venv/bin/python -m feedercam --config config.pi.yaml run    # try it in the foreground
 sudo systemctl enable --now feedercam  # then run it on boot
+journalctl -u feedercam -f             # watch the log
 ```
+
+`install.sh` exports YOLOv8n to NCNN, which runs several times faster than
+PyTorch on the Pi's CPU, and writes a `config.pi.yaml` that uses it. If the Pi
+still can't keep up, raise `detector.every_n_frames` to 2 or 3.
 
 The Pi only runs capture and detection, writing each finished visit to
 `data/incoming/` (a few crops plus one line of JSON). Species classification
 runs on the laptop, because a ViT is too slow for the Pi's CPU and nobody needs
 the species name the instant a bird lands.
+
+### Output
+
+Each finished visit becomes up to three crops and one line of JSON:
+
+```
+data/incoming/crops/2026-10-15/feeder-pi-20261015-080020-7005bd_0.jpg
+data/incoming/visits/2026-10-15.jsonl
+```
+
+```json
+{"uid": "feeder-pi-20261015-080020-7005bd", "device": "feeder-pi", "track_id": 4,
+ "started_at": "2026-10-15T08:00:20.100", "ended_at": "2026-10-15T08:00:26.100",
+ "n_frames": 61, "det_conf": 0.81, "crops": [{"path": "crops/2026-10-15/...", ...}]}
+```
 
 ## The daily loop (laptop)
 
@@ -95,6 +129,10 @@ Then:
   ByteTrack gives it one ID across those frames, and a visit ends when that ID
   has been gone for 4 seconds. Counting is only as good as the tracking, so the
   simulator reports "counted more than once" separately.
+- **Weak boxes go to the tracker.** The detector threshold is low (0.1) because
+  ByteTrack uses low-confidence boxes to hold on to a bird through a blurry or
+  half-hidden frame. A visit only counts if at least one of its frames was
+  confident (0.4), so weak boxes on their own never create a visit.
 - **Motion gate.** The detector only runs while something moves, for a few
   seconds afterwards, and while a tracked bird is still present (a bird sitting
   still makes no motion but is still visiting).
