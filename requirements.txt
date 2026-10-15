@@ -1,0 +1,6 @@
+# Laptop: running and testing the detection pipeline on video files or a webcam.
+ultralytics>=8.3
+opencv-python>=4.10
+pyyaml>=6.0
+lap>=0.5
+pytest>=8.0

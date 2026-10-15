@@ -1,0 +1,18 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Images, logs, and databases are large and personal; they stay local.
+data/
+runs/
+
+# Model weights are large; they're rebuilt by the training scripts.
+*.pt
+models/*.pt
+*_ncnn_model/
+
+.DS_Store
+
+# Pi-specific settings written by pi/install.sh
+config.pi.yaml

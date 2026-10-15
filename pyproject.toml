@@ -1,0 +1,9 @@
+[project]
+name = "feedercam"
+version = "0.1.0"
+description = "Detect and track birds at a backyard feeder"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
