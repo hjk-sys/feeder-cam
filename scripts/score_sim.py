@@ -5,6 +5,7 @@
 Matches each logged visit to the true visit it overlaps most in time, then
 reports how many visits were found, how many were split into several (a
 tracking failure: one bird counted twice), and how many species were right.
+Evaluation of the video.
 """
 
 import argparse
