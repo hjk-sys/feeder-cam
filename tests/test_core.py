@@ -1,4 +1,4 @@
-"""Tests for the parts of the pipeline that don't need a model or a camera."""
+"""Tests for the parts of the pipeline that don't need a model or a camera. Not necessarily needed."""
 
 import json
 from datetime import datetime, timedelta
