@@ -1,4 +1,4 @@
-"""YOLOv8 bird detection with ByteTrack tracking (via Ultralytics)."""
+"""YOLOv8 bird detection with ByteTrack tracking (via Ultralytics). Imported from public repository."""
 
 from .visits import Detection
 
