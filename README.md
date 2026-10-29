@@ -179,5 +179,4 @@ observations under CC0, CC-BY, and CC-BY-NC licenses. They are not committed
 to this repo. `training/fetch_inat.py` re-downloads them and records each
 photographer's credit in `data/training/attribution.csv`.
 
-Built with Ultralytics YOLOv8, PyTorch, timm, and Streamlit. Written with help
-from Claude (Anthropic).
+Built with Ultralytics YOLOv8, PyTorch, timm, and Streamlit. 
